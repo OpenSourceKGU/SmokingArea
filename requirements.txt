@@ -1,0 +1,9 @@
+fastapi==0.103.1
+uvicorn==0.23.2
+python-multipart==0.0.6
+# GIS 관련 라이브러리 (필요시 주석 해제)
+# osmnx==1.2.1
+# geopandas==0.13.2
+# shapely==2.0.1
+# postgresql-connector (다른 조원이 담당하므로 여기서는 제외)
+# psycopg2-binary # PostgreSQL 연결 라이브러리 예시 (비동기 사용시 asyncpg 등)

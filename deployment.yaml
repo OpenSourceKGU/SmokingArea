@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-backend-deployment
+  labels:
+    app: fastapi-backend
+spec:
+  replicas: 2 # 백엔드 Pod 2개 실행 (확장성을 위해)
+  selector:
+    matchLabels:
+      app: fastapi-backend
+  template:
+    metadata:
+      labels:
+        app: fastapi-backend
+    spec:
+      containers:
+      - name: fastapi-backend
+        image: chanhuy/fastapi-backend:latest # Docker Hub 이미지 경로
+        # 또는 로컬 이미지 사용 시 (로컬 클러스터에서만): fastapi-backend:latest
+        imagePullPolicy: Always # git에서 pull할 때 항상 허용
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL # 데이터베이스 연결 정보 (다른 조원과 협의 필요)
+          value: "postgresql://user:password@db-service-name:5432/dbname" # 예시
+        - name: FRONTEND_URL # CORS 설정 등을 위한 프론트엔드 URL (필요시)
+          value: "http://localhost:3000" # 예시
+        resources: # Pod가 사용할 CPU/메모리 자원 정의
+          requests:
+            memory: "128Mi"
+            cpu: "250m" # 0.25 코어
+          limits:
+            memory: "512Mi"
+            cpu: "500m" # 0.5 코어
+        livenessProbe: # Pod가 정상적으로 동작하는지 확인
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe: # Pod가 요청을 처리할 준비가 되었는지 확인
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
