@@ -1,8 +1,8 @@
 name: 03. Security Audit (Daily)
 
 on:
-  schedule:
-    - cron: '0 18 * * *' # 매일 한국 시간 새벽 3시 (UTC 18시)
+  #schedule:
+    #- cron: '0 18 * * *' # 매일 한국 시간 새벽 3시 (UTC 18시)
   workflow_dispatch: # 필요시 수동 실행 가능
 
 jobs:
