@@ -1,3 +1,75 @@
+# 담배권 - 담배소매업 입지 분석 서비스
+
+### 배경
+"시행규칙 제3조 1항에 따른 소매인 영업소 간의 거리는 100미터 이상으로 하여 일정하게 유지하여야 한다."
+위 시행 규칙에 따라 입점 후보지를 정할 때 다음과 같은 문제점 발생
+1. 도보 100m를 계산하는 어려움
+2. 여러 후보지를 선택하고 규칙에 맞는지 확인하는 시간적 손실
+3. 정확하지 않은 계산으로 허가가 반려된 경우 발생하는 손실
+
+### 제공 기능
+1. 입점 가능 여부 확인 - 법적 제한이 생기지 않는지 확인할 수 있음
+2. 담배 소매업 제한 구역 표시 - 지도에서 법적 제한 구역을 시각적으로 확인할 수 있음
+3. 후보지 관리 - 위시리스트 기능
+4. 주변 상가 건물 검색 - 원하는 위치에 입점 가능한 건물이 있는지 검색 
+
+### 시스템 아키텍처
+flowchart TD
+    %% Client
+    Client[Client / User]
+
+    %% Application Layer (Docker)
+    subgraph AppLayer [Application Layer (FastAPI Container)]
+        direction TB
+        Router[API Routers<br>app/api]
+        Services[Business Services<br>app/services]
+        Utils[Utilities & GeoUtils<br>app/utils]
+        
+        Router -->|Routing| Services
+        Services -->|Helper Functions| Utils
+    end
+
+    %% Data Layer (Docker)
+    subgraph DataLayer [Data Layer (Database Container)]
+        DB[(PostgreSQL + PostGIS)]
+    end
+
+    %% External APIs
+    subgraph ExternalAPI [External API Layer (Naver)]
+        NaverGeo[Naver Geocoding API<br>(Reverse Geocoding)]
+        NaverSearch[Naver Local Search API<br>(Place Search)]
+    end
+
+    %% CI/CD Layer
+    subgraph DevOps [CI/CD & Registry]
+        Actions[GitHub Actions<br>(Test & Build)]
+        Registry[Docker Hub / GHCR<br>(Image Registry)]
+        
+        Actions -->|Push Image| Registry
+    end
+
+    %% Main Data Flow
+    Client -->|HTTPS Request| Router
+    Services <-->|Query / Save| DB
+    Services <-->|Address Conversion| NaverGeo
+    Services <-->|Location Search| NaverSearch
+    Registry -.->|Pull Image (Demo)| AppLayer
+
+    %% Styling
+    classDef client fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
+    classDef app fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef db fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
+    classDef api fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef devops fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#000
+
+    class Client client
+    class Router,Services,Utils app
+    class DB db
+    class NaverGeo,NaverSearch api
+    class Actions,Registry devops
+
+## 프로젝트 시작하기
+
 윈도우 ./run.ps1
 리눅스/맥  bash run.sh 또는 ./run.sh
 
