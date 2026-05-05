@@ -14,59 +14,45 @@
 4. 주변 상가 건물 검색 - 원하는 위치에 입점 가능한 건물이 있는지 검색 
 
 ### 시스템 아키텍처
-flowchart TD
-    %% Client
-    Client[Client / User]
+```
+## 🏗️ 시스템 아키텍처 (System Architecture)
 
-    %% Application Layer (Docker)
-    subgraph AppLayer [Application Layer (FastAPI Container)]
-        direction TB
-        Router[API Routers<br>app/api]
-        Services[Business Services<br>app/services]
-        Utils[Utilities & GeoUtils<br>app/utils]
-        
-        Router -->|Routing| Services
-        Services -->|Helper Functions| Utils
-    end
+┌────────────────┐        Build & Push       ┌─────────────────┐
+│ GitHub Actions │──────────────────────────►│ Docker Hub/GHCR │
+│ - Code Quality │                           │ - Image Storage │
+│ - Pytest w/ DB │                           └────────┬────────┘
+└────────────────┘                                    │
+                                                      │ Pull Image
+                                                      ▼
+┌────────────────┐       HTTP / JSON       ┌──────────────────────────┐
+│  Client / User │◄───────────────────────►│    Backend (FastAPI)     │
+│  (Web/Mobile)  │                         │    [Docker Container]    │
+└────────────────┘                         │ - API Routers            │
+                                           │ - Business Services      │
+                                           │ - Geo Utilities          │
+                                           └──────┬────────────┬──────┘
+                                                  │            │
+                                      Query/Save  │            │ HTTP GET
+                                     (Geospatial) │            │ (REST)
+                                                  ▼            ▼
+                                ┌──────────────────────┐  ┌──────────────────────┐
+                                │ Database (PostgreSQL)│  │ External Naver APIs  │
+                                │  [Docker Container]  │  │                      │
+                                │ - PostGIS Extension  │  │ - Reverse Geocoding  │
+                                │ - Store Coordinates  │  │   (Coords -> Addr)   │
+                                │ - Spatial Filtering  │  │ - Local Place Search │
+                                └──────────────────────┘  └──────────────────────┘
+```
+### 🧩 주요 컴포넌트 설명
 
-    %% Data Layer (Docker)
-    subgraph DataLayer [Data Layer (Database Container)]
-        DB[(PostgreSQL + PostGIS)]
-    end
+* **Client / User**: 위치 기반 상가 정보를 요청하는 사용자 단말 또는 프론트엔드 애플리케이션입니다.
+* **Backend (FastAPI)**: 도커 컨테이너 환경에서 동작하며, API 라우팅, 네이버 API 통신, 거리 계산 등의 핵심 비즈니스 로직을 처리합니다.
+* **Database (PostgreSQL + PostGIS)**: 상가 데이터와 공간 좌표를 저장하는 도커 컨테이너입니다. PostGIS 확장을 통해 지리적 질의(반경 내 검색 등)를 고속으로 수행합니다.
+* **External Naver APIs**: 
+  * `Reverse Geocoding`: 사용자의 위도/경도 좌표를 행정동 주소로 변환합니다.
+  * `Local Place Search`: 변환된 주소를 바탕으로 주변 상가 정보를 검색하여 가져옵니다.
+* **CI/CD (GitHub Actions & Docker Hub)**: 코드가 푸시되면 자동으로 테스트와 코드 검사를 수행하고, 통과 시 도커 이미지를 빌드하여 레지스트리에 배포합니다.
 
-    %% External APIs
-    subgraph ExternalAPI [External API Layer (Naver)]
-        NaverGeo[Naver Geocoding API<br>(Reverse Geocoding)]
-        NaverSearch[Naver Local Search API<br>(Place Search)]
-    end
-
-    %% CI/CD Layer
-    subgraph DevOps [CI/CD & Registry]
-        Actions[GitHub Actions<br>(Test & Build)]
-        Registry[Docker Hub / GHCR<br>(Image Registry)]
-        
-        Actions -->|Push Image| Registry
-    end
-
-    %% Main Data Flow
-    Client -->|HTTPS Request| Router
-    Services <-->|Query / Save| DB
-    Services <-->|Address Conversion| NaverGeo
-    Services <-->|Location Search| NaverSearch
-    Registry -.->|Pull Image (Demo)| AppLayer
-
-    %% Styling
-    classDef client fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
-    classDef app fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef db fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
-    classDef api fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
-    classDef devops fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#000
-
-    class Client client
-    class Router,Services,Utils app
-    class DB db
-    class NaverGeo,NaverSearch api
-    class Actions,Registry devops
 
 ## 프로젝트 시작하기
 
