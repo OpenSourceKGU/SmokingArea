@@ -7,11 +7,25 @@
 2. 여러 후보지를 선택하고 규칙에 맞는지 확인하는 시간적 손실
 3. 정확하지 않은 계산으로 허가가 반려된 경우 발생하는 손실
 
+---
+
 ### 제공 기능
 1. 입점 가능 여부 확인 - 법적 제한이 생기지 않는지 확인할 수 있음
 2. 담배 소매업 제한 구역 표시 - 지도에서 법적 제한 구역을 시각적으로 확인할 수 있음
 3. 후보지 관리 - 위시리스트 기능
 4. 주변 상가 건물 검색 - 원하는 위치에 입점 가능한 건물이 있는지 검색 
+
+---
+
+## 🛠 기술 스택 (Tech Stack)
+
+* **Backend**: Python 3.10, FastAPI, Uvicorn
+* **Database**: PostgreSQL 16, PostGIS 3.4, SQLAlchemy
+* **External API**: Naver Cloud API (Geocoding), Naver Developers API (Search)
+* **DevOps**: Docker, Docker Compose, GitHub Actions
+* **Testing**: Pytest, Httpx
+
+---
 
 ### 시스템 아키텍처
 ```
